@@ -31,9 +31,9 @@ tasks:
           command:
             - "/bin/bash"
             - "-lcx"
-            - "git clone ${repository} &&
+            - "git clone --quiet ${repository} &&
                cd taskcluster_yml_validator &&
-               git checkout ${head_rev} &&
+               git -c advice.detachedHead=false checkout ${head_rev} &&
                pip install -r test-requirements.txt &&
                pre-commit run -a" # TODO Be smarter and run only on modified files
         metadata:
@@ -53,9 +53,9 @@ tasks:
           command:
             - "/bin/bash"
             - "-lcx"
-            - "git clone ${repository} &&
+            - "git clone --quiet ${repository} &&
                cd taskcluster_yml_validator &&
-               git checkout ${head_rev} &&
+               git -c advice.detachedHead=false checkout ${head_rev} &&
                pip install -r requirements.txt &&
                pip install -r test-requirements.txt &&
                python -m pytest -v tests/test_*.py"
