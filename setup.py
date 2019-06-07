@@ -39,9 +39,9 @@ with open(os.path.join(here, "VERSION")) as f:
 
 
 setup(
-    name="bugbug",
+    name="taskcluster_yml_validator",
     version=version,
-    description="ML tools for Mozilla projects",
+    description="Validator for .taskcluster.yml files",
     author="Marco Castelluccio",
     author_email="mcastelluccio@mozilla.com",
     install_requires=install_requires,
