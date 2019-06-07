@@ -13,7 +13,7 @@ from taskcluster_yml_validator.events import pull_request_open, push, tag_push
 
 def validate(path):
     with open(path, "r") as f:
-        taskcluster_yml = yaml.load(f.read())
+        taskcluster_yml = yaml.safe_load(f.read())
 
     def as_slugid(tid):
         return tid
