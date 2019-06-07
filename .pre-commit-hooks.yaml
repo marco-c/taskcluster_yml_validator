@@ -3,7 +3,7 @@
     description: Checks for validity of .taskcluster.yml file.
     entry: taskcluster_yml_validator
     language: python
-    files: ".taskcluster.yml"
+    files: "^\\.taskcluster\\.yml$"
     args: []
     require_serial: false
     additional_dependencies: []
