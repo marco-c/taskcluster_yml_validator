@@ -1,0 +1,9 @@
+-   id: taskcluster_yml
+    name: taskcluster_yml
+    description: Checks for validity of .taskcluster.yml file.
+    entry: taskcluster_yml_validator
+    language: python
+    files: ".taskcluster.yml"
+    args: []
+    require_serial: false
+    additional_dependencies: []
