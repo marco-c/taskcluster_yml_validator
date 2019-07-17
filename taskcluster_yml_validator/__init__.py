@@ -18,6 +18,7 @@ def validate(path):
     r = requests.get(
         "https://schemas.taskcluster.net/github/v1/taskcluster-github-config.v1.json"
     )
+    r.raise_for_status()
     taskcluster_yml_schema = r.json()
 
     with open(path, "r") as f:
@@ -31,10 +32,12 @@ def validate(path):
     r = requests.get(
         "https://schemas.taskcluster.net/queue/v1/create-task-request.json"
     )
+    r.raise_for_status()
     task_schema = r.json()
 
     # TODO: Don't assume docker-worker!
     r = requests.get("https://schemas.taskcluster.net/docker-worker/v1/payload.json")
+    r.raise_for_status()
     payload_schema = r.json()
 
     events = [push, tag_push, pull_request_open]
