@@ -21,14 +21,6 @@ def validate(path):
     r.raise_for_status()
     taskcluster_yml_schema = r.json()
 
-    with open(path, "r") as f:
-        taskcluster_yml = yaml.safe_load(f.read())
-
-    jsonschema.validate(instance=taskcluster_yml, schema=taskcluster_yml_schema)
-
-    def as_slugid(tid):
-        return slugid.nice()
-
     r = requests.get(
         "https://schemas.taskcluster.net/queue/v1/create-task-request.json"
     )
@@ -39,6 +31,14 @@ def validate(path):
     r = requests.get("https://schemas.taskcluster.net/docker-worker/v1/payload.json")
     r.raise_for_status()
     payload_schema = r.json()
+
+    with open(path, "r") as f:
+        taskcluster_yml = yaml.safe_load(f.read())
+
+    jsonschema.validate(instance=taskcluster_yml, schema=taskcluster_yml_schema)
+
+    def as_slugid(tid):
+        return slugid.nice()
 
     events = [push, tag_push, pull_request_open]
 
