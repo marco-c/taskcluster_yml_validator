@@ -7,6 +7,7 @@ import os
 import re
 
 import jsone
+import jsonschema
 import pytest
 
 from taskcluster_yml_validator import validate
@@ -26,3 +27,31 @@ def test_invalid_taskcluster_yml():
         ),
     ):
         validate(os.path.join(FIXTURES_DIR, "bugbug_invalid.taskcluster.yml"))
+
+
+def test_invalid_main_schema_taskcluster_yml():
+    with pytest.raises(
+        jsonschema.exceptions.ValidationError,
+        match=re.escape("'version' is a required property"),
+    ):
+        validate(
+            os.path.join(FIXTURES_DIR, "bugbug_invalid_main_schema.taskcluster.yml")
+        )
+
+
+def test_invalid_schema_taskcluster_yml():
+    with pytest.raises(
+        jsonschema.exceptions.ValidationError,
+        match=re.escape("'metadata' is a required property"),
+    ):
+        validate(os.path.join(FIXTURES_DIR, "bugbug_invalid_schema.taskcluster.yml"))
+
+
+def test_invalid_schema_payload_taskcluster_yml():
+    with pytest.raises(
+        jsonschema.exceptions.ValidationError,
+        match=re.escape("'python3 run.py' is not of type 'array'"),
+    ):
+        validate(
+            os.path.join(FIXTURES_DIR, "bugbug_invalid_schema_payload.taskcluster.yml")
+        )

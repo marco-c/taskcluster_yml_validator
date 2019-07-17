@@ -1,2 +1,5 @@
 json-e==3.0.0
 pyyaml==5.1.1
+jsonschema==3.0.1
+requests==2.22.0
+slugid==2.0.0
