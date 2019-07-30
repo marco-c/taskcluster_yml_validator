@@ -35,7 +35,7 @@ tasks:
                cd taskcluster_yml_validator &&
                git -c advice.detachedHead=false checkout ${head_rev} &&
                pip install --quiet -r test-requirements.txt &&
-               pre-commit run -a" # TODO Be smarter and run only on modified files
+               pre-commit run -a"
         metadata:
           name: taskcluster_yml_validator lint
           description: taskcluster_yml_validator lint
