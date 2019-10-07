@@ -39,7 +39,7 @@ tasks:
         metadata:
           name: taskcluster_yml_validator lint
           description: taskcluster_yml_validator lint
-          owner: ${user}@users.noreply.github.com
+          owner: mcastelluccio@mozilla.com
           source: ${repository}/raw/${head_rev}/.taskcluster.yml
 
       - taskId: {$eval: as_slugid("tests_task")}
@@ -62,5 +62,5 @@ tasks:
         metadata:
           name: taskcluster_yml_validator tests
           description: taskcluster_yml_validator tests
-          owner: ${user}@users.noreply.github.com
+          owner: mcastelluccio@mozilla.com
           source: ${repository}/raw/${head_rev}/.taskcluster.yml
