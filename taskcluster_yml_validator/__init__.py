@@ -16,19 +16,21 @@ from taskcluster_yml_validator.events import pull_request_open, push, tag_push
 
 def validate(path):
     r = requests.get(
-        "https://schemas.taskcluster.net/github/v1/taskcluster-github-config.v1.json"
+        "https://community-tc.services.mozilla.com/schemas/github/v1/taskcluster-github-config.v1.json"
     )
     r.raise_for_status()
     taskcluster_yml_schema = r.json()
 
     r = requests.get(
-        "https://schemas.taskcluster.net/queue/v1/create-task-request.json"
+        "https://community-tc.services.mozilla.com/schemas/queue/v1/create-task-request.json"
     )
     r.raise_for_status()
     task_schema = r.json()
 
     # TODO: Don't assume docker-worker!
-    r = requests.get("https://schemas.taskcluster.net/docker-worker/v1/payload.json")
+    r = requests.get(
+        "https://raw.githubusercontent.com/taskcluster/docker-worker/master/schemas/v1/payload.json"
+    )
     r.raise_for_status()
     payload_schema = r.json()
 
