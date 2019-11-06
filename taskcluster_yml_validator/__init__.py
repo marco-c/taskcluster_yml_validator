@@ -48,6 +48,7 @@ def validate(path):
         rendered_taskcluster_yml = jsone.render(
             taskcluster_yml,
             context={
+                "taskcluster_root_url": "https://tc.mozilla.com",
                 "tasks_for": event.tasks_for,
                 "as_slugid": as_slugid,
                 "event": event.event,
