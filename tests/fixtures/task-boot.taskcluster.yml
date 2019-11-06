@@ -1,0 +1,139 @@
+version: 1
+policy:
+  pullRequests: public
+tasks:
+  $let:
+    head_branch:
+      $if: 'tasks_for == "github-pull-request"'
+      then: ${event.pull_request.head.ref}
+      else:
+        $if: 'tasks_for == "github-push"'
+        then: ${event.ref}
+        else: ${event.release.target_commitish}
+
+    head_rev:
+      $if: 'tasks_for == "github-pull-request"'
+      then: ${event.pull_request.head.sha}
+      else:
+        $if: 'tasks_for == "github-push"'
+        then: ${event.after}
+        else: ${event.release.tag_name}
+
+    repository:
+      $if: 'tasks_for == "github-pull-request"'
+      then: ${event.pull_request.head.repo.html_url}
+      else: ${event.repository.html_url}
+  in:
+    - taskId: {$eval: as_slugid("code_checks")}
+      provisionerId: proj-relman
+      workerType: ci
+      created: {$fromNow: ''}
+      deadline: {$fromNow: '1 hour'}
+      extra:
+        github:
+          events:
+            - pull_request.opened
+            - pull_request.reopened
+            - pull_request.synchronize
+            - push
+      payload:
+        maxRunTime: 3600
+        image: python:3
+        env:
+          GIT_REPOSITORY: ${repository}
+          GIT_REVISION: ${head_rev}
+        command:
+          - sh
+          - -lxce
+          - "git clone --quiet ${repository} /src && cd /src && git checkout ${head_rev} -b taskboot &&
+            pip install --no-cache-dir --quiet -r requirements-tests.txt . &&
+            pre-commit run -a && pytest -v"
+      metadata:
+        name: TaskBoot code checks
+        description: Taskcluster boot utilities - code linting & unit tests
+        owner: bastien@mozilla.com
+        source: https://github.com/mozilla/task-boot
+
+    - taskId: {$eval: as_slugid("docker_build")}
+      dependencies:
+        - {$eval: as_slugid("code_checks")}
+      provisionerId: proj-relman
+      workerType: ci
+      created: {$fromNow: ''}
+      deadline: {$fromNow: '1 hour'}
+      extra:
+        github:
+          events:
+            - pull_request.opened
+            - pull_request.reopened
+            - pull_request.synchronize
+            - push
+      payload:
+        capabilities:
+          privileged: true
+        maxRunTime: 3600
+        image: python:3-alpine
+        env:
+          IMAGE: mozilla/taskboot
+          REGISTRY: registry.hub.docker.com
+          TASKCLUSTER_ROOT_URL: '${taskcluster_root_url}'
+          VERSION:
+            $if: 'head_branch[:10] == "refs/tags/"'
+            then: {$eval: 'head_branch[10:]' }
+            else: "latest"
+        command:
+          - sh
+          - -lxce
+          - "apk add --no-cache git img --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing --quiet &&
+            git clone --quiet ${repository} /src && cd /src && git checkout ${head_rev} -b taskboot &&
+            pip install --no-cache-dir --quiet . &&
+            taskboot --target=/src build --image=$IMAGE --tag=$VERSION --write /image.tar Dockerfile"
+        artifacts:
+          public/taskboot/image.tar:
+            expires: {$fromNow: '2 weeks'}
+            path: /image.tar
+            type: file
+      scopes:
+        - docker-worker:capability:privileged
+      metadata:
+        name: TaskBoot docker build
+        description: Taskcluster boot utilities - build latest docker image
+        owner: bastien@mozilla.com
+        source: https://github.com/mozilla/task-boot
+
+    - $if: 'tasks_for == "github-push" && (head_branch == "refs/heads/master" || head_branch[:10] == "refs/tags/")'
+      then:
+        taskId: {$eval: as_slugid("docker_push")}
+        dependencies:
+          - {$eval: as_slugid("docker_build")}
+        provisionerId: proj-relman
+        workerType: ci
+        created: {$fromNow: ''}
+        deadline: {$fromNow: '1 hour'}
+        extra:
+          github:
+            events:
+              - push
+        payload:
+          features:
+            # Needed for access to secret
+            taskclusterProxy: true
+          maxRunTime: 3600
+          image: python:3-alpine
+          env:
+            TASKCLUSTER_SECRET: project/relman/taskboot/deploy
+            TASKCLUSTER_ROOT_URL: '${taskcluster_root_url}'
+          command:
+            - sh
+            - -lxce
+            - "apk add --no-cache git skopeo --quiet &&
+              git clone --quiet ${repository} /src && cd /src && git checkout ${head_rev} -b taskboot &&
+              pip install --no-cache-dir --quiet . &&
+              taskboot push-artifact"
+        scopes:
+          - secrets:get:project/relman/taskboot/deploy
+        metadata:
+          name: TaskBoot docker push
+          description: Taskcluster boot utilities - push docker image
+          owner: bastien@mozilla.com
+          source: https://github.com/mozilla/task-boot

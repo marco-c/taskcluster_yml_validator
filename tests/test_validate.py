@@ -19,6 +19,10 @@ def test_valid_taskcluster_yml():
     validate(os.path.join(FIXTURES_DIR, "bugbug.taskcluster.yml"))
 
 
+def test_valid_taskcluster_yml_with_taskcluster_root_url_context():
+    validate(os.path.join(FIXTURES_DIR, "task-boot.taskcluster.yml"))
+
+
 def test_invalid_taskcluster_yml():
     with pytest.raises(
         jsone.shared.InterpreterError,
