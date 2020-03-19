@@ -27,12 +27,17 @@ def validate(path):
     r.raise_for_status()
     task_schema = r.json()
 
-    # TODO: Don't assume docker-worker!
-    r = requests.get(
-        "https://raw.githubusercontent.com/taskcluster/docker-worker/master/schemas/v1/payload.json"
-    )
-    r.raise_for_status()
-    payload_schema = r.json()
+    # TODO: Instead of trying all possible payload schemas, use the worker manager API to figure out
+    # exactly which one is the right one.
+    payload_schema_urls = [
+        "https://raw.githubusercontent.com/taskcluster/docker-worker/master/schemas/v1/payload.json",
+        "https://community-tc.services.mozilla.com/schemas/generic-worker/docker_posix.json",
+        "https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json",
+        "https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_windows.json",
+        "https://community-tc.services.mozilla.com/schemas/generic-worker/simple_posix.json",
+    ]
+
+    payload_schemas = {}
 
     with open(path, "r") as f:
         taskcluster_yml = yaml.safe_load(f.read())
@@ -62,7 +67,27 @@ def validate(path):
                 del task["taskId"]
 
             jsonschema.validate(instance=task, schema=task_schema)
-            jsonschema.validate(instance=task["payload"], schema=payload_schema)
+
+            payload_validation_err = None
+            for payload_schema_url in payload_schema_urls:
+                if payload_schema_url not in payload_schemas:
+                    r = requests.get(payload_schema_url)
+                    r.raise_for_status()
+                    payload_schemas[payload_schema_url] = r.json()
+
+                try:
+                    jsonschema.validate(
+                        instance=task["payload"],
+                        schema=payload_schemas[payload_schema_url],
+                    )
+                    payload_validation_err = None
+                    break
+                except jsonschema.exceptions.ValidationError as e:
+                    if payload_validation_err is None:
+                        payload_validation_err = e
+
+            if payload_validation_err is not None:
+                raise payload_validation_err
 
 
 def main():

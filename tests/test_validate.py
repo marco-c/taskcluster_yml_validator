@@ -59,3 +59,7 @@ def test_invalid_schema_payload_taskcluster_yml():
         validate(
             os.path.join(FIXTURES_DIR, "bugbug_invalid_schema_payload.taskcluster.yml")
         )
+
+
+def test_valid_taskcluster_yml_with_win_generic_worker():
+    validate(os.path.join(FIXTURES_DIR, "win.taskcluster.yml"))
