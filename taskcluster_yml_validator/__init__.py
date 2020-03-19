@@ -28,7 +28,8 @@ def validate(path):
     task_schema = r.json()
 
     # TODO: Instead of trying all possible payload schemas, use the worker manager API to figure out
-    # exactly which one is the right one.
+    # exactly which one is the right one. We can do this after https://bugzilla.mozilla.org/show_bug.cgi?id=1609099
+    # is fixed.
     payload_schema_urls = [
         "https://raw.githubusercontent.com/taskcluster/docker-worker/master/schemas/v1/payload.json",
         "https://community-tc.services.mozilla.com/schemas/generic-worker/docker_posix.json",
