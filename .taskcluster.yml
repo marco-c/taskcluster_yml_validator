@@ -18,7 +18,7 @@ tasks:
       then: ${event.pull_request.head.repo.html_url}
       else: ${event.repository.html_url}
   in:
-    $if: 'tasks_for in ["github-pull-request", "github-push"]'
+    $if: 'tasks_for == "github-pull-request" && event["action"] in ["closed"]'
     then:
       - taskId: {$eval: as_slugid("lint_task")}
         created: {$fromNow: ''}
