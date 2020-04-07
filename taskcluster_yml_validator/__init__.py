@@ -61,6 +61,9 @@ def validate(path):
             },
         )
 
+        if "tasks" not in rendered_taskcluster_yml:
+            continue
+
         for task in rendered_taskcluster_yml["tasks"]:
             # According to https://docs.taskcluster.net/docs/reference/integrations/github/taskcluster-yml-v1#result, the tasks
             # will be passed to createTask directly after removing "taskId", so we can validate with the create-task-request schema.
