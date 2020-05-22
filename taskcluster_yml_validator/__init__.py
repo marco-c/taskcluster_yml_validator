@@ -31,7 +31,7 @@ def validate(path):
     # exactly which one is the right one. We can do this after https://bugzilla.mozilla.org/show_bug.cgi?id=1609099
     # is fixed.
     payload_schema_urls = [
-        "https://raw.githubusercontent.com/taskcluster/taskcluster/master/workers/docker-worker/schemas/v1/payload.json",
+        "https://raw.githubusercontent.com/taskcluster/taskcluster/3ed511ef9119da54fc093e976b7b5955874c9b54/workers/docker-worker/schemas/v1/payload.json",
         "https://community-tc.services.mozilla.com/schemas/generic-worker/docker_posix.json",
         "https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json",
         "https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_windows.json",
