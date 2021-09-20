@@ -20,9 +20,9 @@ tasks:
   in:
     $if: 'tasks_for == "github-push" || (tasks_for == "github-pull-request" && event["action"] in ["opened", "reopened", "synchronize"])'
     then:
-      - taskId: {$eval: as_slugid("lint_and_tests_task")}
-        created: {$fromNow: ''}
-        deadline: {$fromNow: '1 hour'}
+      - taskId: { $eval: as_slugid("lint_and_tests_task") }
+        created: { $fromNow: "" }
+        deadline: { $fromNow: "1 hour" }
         provisionerId: proj-misc
         workerType: ci
         payload:
@@ -32,11 +32,11 @@ tasks:
             - "/bin/bash"
             - "-lcx"
             - "git clone --quiet ${repository} &&
-               cd taskcluster_yml_validator &&
-               git -c advice.detachedHead=false checkout ${head_rev} &&
-               pip install --quiet -r test-requirements.txt &&
-               pre-commit run -a --show-diff-on-failure &&
-               python -m pytest -v tests/test_*.py"
+              cd taskcluster_yml_validator &&
+              git -c advice.detachedHead=false checkout ${head_rev} &&
+              pip install --quiet -r test-requirements.txt &&
+              pre-commit run -a --show-diff-on-failure &&
+              python -m pytest -v tests/test_*.py"
         metadata:
           name: taskcluster_yml_validator lint and tests
           description: taskcluster_yml_validator lint and tests
