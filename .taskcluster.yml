@@ -37,7 +37,9 @@ tasks:
               pip install --quiet -r requirements.txt &&
               pip install --quiet -r test-requirements.txt &&
               pre-commit run -a --show-diff-on-failure &&
-              python -m pytest -v tests/test_*.py"
+              python -m pytest -v tests/test_*.py &&
+              python setup.py sdist &&
+              pip install dist/taskcluster_yml_validator-$(cat VERSION).tar.gz"
         metadata:
           name: taskcluster_yml_validator lint and tests
           description: taskcluster_yml_validator lint and tests
