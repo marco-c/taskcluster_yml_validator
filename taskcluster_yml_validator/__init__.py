@@ -65,6 +65,12 @@ def validate(path):
             continue
 
         for task in rendered_taskcluster_yml["tasks"]:
+
+            if type(task) != dict:
+                raise TypeError(
+                    f"Task should be of dict type (after json-e parsing). Found: {type(task).__name__}"
+                )
+
             # According to https://docs.taskcluster.net/docs/reference/integrations/github/taskcluster-yml-v1#result, the tasks
             # will be passed to createTask directly after removing "taskId", so we can validate with the create-task-request schema.
             if "taskId" in task:

@@ -9,8 +9,26 @@ import re
 import jsone
 import jsonschema
 import pytest
+import requests
 
+import taskcluster_yml_validator
 from taskcluster_yml_validator import validate
+
+# Cache the schema download, so we don't hammer the TC instance
+cache = {}
+
+
+@pytest.fixture(autouse=True)
+def cached_requests(monkeypatch):
+    real_get = requests.get
+
+    def get(url):
+        if url not in cache:
+            cache[url] = real_get(url)
+        return cache[url]
+
+    monkeypatch.setattr(taskcluster_yml_validator.requests, "get", get)
+
 
 FIXTURES_DIR = os.path.join(os.path.dirname(__file__), "fixtures")
 
@@ -58,6 +76,20 @@ def test_invalid_schema_payload_taskcluster_yml():
     ):
         validate(
             os.path.join(FIXTURES_DIR, "bugbug_invalid_schema_payload.taskcluster.yml")
+        )
+
+
+def test_invalid_schema_task_list_taskcluster_yml():
+    with pytest.raises(
+        TypeError,
+        match=re.escape(
+            "Task should be of dict type (after json-e parsing). Found: str"
+        ),
+    ):
+        validate(
+            os.path.join(
+                FIXTURES_DIR, "bugbug_invalid_schema_task_list.taskcluster.yml"
+            )
         )
 
 
