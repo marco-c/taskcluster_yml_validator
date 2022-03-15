@@ -1,4 +1,4 @@
-json-e==4.4.1
+json-e==4.4.3
 jsonschema==4.4.0
 pyyaml==5.4.1
 requests==2.27.1
