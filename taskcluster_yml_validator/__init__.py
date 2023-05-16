@@ -65,7 +65,6 @@ def validate(path):
             continue
 
         for task in rendered_taskcluster_yml["tasks"]:
-
             if type(task) != dict:
                 raise TypeError(
                     f"Task should be of dict type (after json-e parsing). Found: {type(task).__name__}"
