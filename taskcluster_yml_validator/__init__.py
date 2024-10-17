@@ -34,7 +34,7 @@ def validate(path):
         "https://community-tc.services.mozilla.com/schemas/docker-worker/v1/payload.json",
         "https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_posix.json",
         "https://community-tc.services.mozilla.com/schemas/generic-worker/multiuser_windows.json",
-        "https://community-tc.services.mozilla.com/schemas/generic-worker/simple_posix.json",
+        "https://community-tc.services.mozilla.com/schemas/generic-worker/insecure_posix.json",
     ]
 
     payload_schemas = {}
