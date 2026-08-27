@@ -5,32 +5,27 @@
 
 import os
 import re
+import urllib.request
 
 import jsone
 import jsonschema
 import pytest
-import requests
 
 import taskcluster_yml_validator
 from taskcluster_yml_validator import validate
 
-# Cache the schema download, so we don't hammer the TC instance
-cache = {}
-
-
-@pytest.fixture(autouse=True)
-def cached_requests(monkeypatch):
-    real_get = requests.get
-
-    def get(url):
-        if url not in cache:
-            cache[url] = real_get(url)
-        return cache[url]
-
-    monkeypatch.setattr(taskcluster_yml_validator.requests, "get", get)
-
-
 FIXTURES_DIR = os.path.join(os.path.dirname(__file__), "fixtures")
+
+
+@pytest.fixture
+def uncached_schemas():
+    """Forget the downloaded schemas, so that downloads can be observed."""
+    for cached in (
+        taskcluster_yml_validator.get_schema,
+        taskcluster_yml_validator.retrieve_resource,
+        taskcluster_yml_validator.get_validator,
+    ):
+        cached.cache_clear()
 
 
 def test_valid_taskcluster_yml():
@@ -99,3 +94,32 @@ def test_valid_taskcluster_yml_with_win_generic_worker():
 
 def test_valid_taskcluster_yml_with_no_tasks():
     validate(os.path.join(FIXTURES_DIR, "no_tasks_on_condition.taskcluster.yml"))
+
+
+def test_each_schema_is_downloaded_only_once(uncached_schemas, monkeypatch):
+    downloaded = []
+    real_get = taskcluster_yml_validator.session.get
+
+    def get(url, *args, **kwargs):
+        downloaded.append(url)
+        return real_get(url, *args, **kwargs)
+
+    monkeypatch.setattr(taskcluster_yml_validator.session, "get", get)
+
+    validate(os.path.join(FIXTURES_DIR, "bugbug.taskcluster.yml"))
+
+    assert downloaded, "no schema was downloaded at all"
+    assert sorted(downloaded) == sorted(
+        set(downloaded)
+    ), f"some schemas were downloaded more than once: {downloaded}"
+
+
+def test_references_are_not_retrieved_by_jsonschema(uncached_schemas, monkeypatch):
+    # jsonschema resolves remote references with an uncached request each, which
+    # is both slow and flaky, so everything has to go through our own registry.
+    def urlopen(*args, **kwargs):
+        raise AssertionError("jsonschema retrieved a remote reference by itself")
+
+    monkeypatch.setattr(urllib.request, "urlopen", urlopen)
+
+    validate(os.path.join(FIXTURES_DIR, "bugbug.taskcluster.yml"))
