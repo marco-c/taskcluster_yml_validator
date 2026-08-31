@@ -62,12 +62,8 @@ def retrieve_resource(uri):
     )
 
 
-# jsonschema can resolve remote references on its own, but it does so with a
-# separate uncached request per reference, and that behavior is deprecated.
-# create-task-request.json points at task.json 17 times, and the references are
-# resolved again for every task of every event, so validating a single
-# .taskcluster.yml used to need hundreds of requests, each one a chance to hit a
-# transient failure and fail the whole validation.
+# The registry is needed to cache the resolved references, so that each schema
+# is only downloaded once.
 registry = referencing.Registry(retrieve=retrieve_resource)
 
 
